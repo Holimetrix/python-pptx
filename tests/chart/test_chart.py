@@ -9,7 +9,7 @@ from __future__ import (
 import pytest
 
 from pptx.chart.axis import CategoryAxis, DateAxis, ValueAxis
-from pptx.chart.chart import Chart, ChartTitle, Legend, _Plots
+from pptx.chart.chart import _Chart, ChartTitle, Legend, _Plots
 from pptx.chart.data import ChartData
 from pptx.chart.plot import _BasePlot
 from pptx.chart.series import SeriesCollection
@@ -30,7 +30,7 @@ class DescribeChart(object):
     def it_provides_access_to_its_font(self, font_fixture, Font_, font_):
         chartSpace, expected_xml = font_fixture
         Font_.return_value = font_
-        chart = Chart(chartSpace, None)
+        chart = _Chart(chartSpace, None)
 
         font = chart.font
 
@@ -142,7 +142,7 @@ class DescribeChart(object):
         ax_tag = request.param
         chartSpace_cxml = 'c:chartSpace/c:chart/c:plotArea/%s' % ax_tag
         chartSpace = element(chartSpace_cxml)
-        chart = Chart(chartSpace, None)
+        chart = _Chart(chartSpace, None)
         AxisCls_ = {
             'c:catAx':  CategoryAxis_,
             'c:dateAx': DateAxis_,
@@ -154,12 +154,12 @@ class DescribeChart(object):
 
     @pytest.fixture
     def cat_ax_raise_fixture(self):
-        chart = Chart(element('c:chartSpace/c:chart/c:plotArea'), None)
+        chart = _Chart(element('c:chartSpace/c:chart/c:plotArea'), None)
         return chart
 
     @pytest.fixture
     def chart_type_fixture(self, PlotTypeInspector_, plot_):
-        chart = Chart(None, None)
+        chart = _Chart(None, None)
         chart._plots = [plot_]
         chart_type = XL_CHART_TYPE.PIE
         PlotTypeInspector_.chart_type.return_value = chart_type
@@ -186,7 +186,7 @@ class DescribeChart(object):
     ])
     def has_legend_get_fixture(self, request):
         chartSpace_cxml, expected_value = request.param
-        chart = Chart(element(chartSpace_cxml), None)
+        chart = _Chart(element(chartSpace_cxml), None)
         return chart, expected_value
 
     @pytest.fixture(params=[
@@ -195,7 +195,7 @@ class DescribeChart(object):
     ])
     def has_legend_set_fixture(self, request):
         chartSpace_cxml, new_value, expected_chartSpace_cxml = request.param
-        chart = Chart(element(chartSpace_cxml), None)
+        chart = _Chart(element(chartSpace_cxml), None)
         expected_xml = xml(expected_chartSpace_cxml)
         return chart, new_value, expected_xml
 
@@ -205,7 +205,7 @@ class DescribeChart(object):
     ])
     def has_title_get_fixture(self, request):
         chartSpace_cxml, expected_value = request.param
-        chart = Chart(element(chartSpace_cxml), None)
+        chart = _Chart(element(chartSpace_cxml), None)
         return chart, expected_value
 
     @pytest.fixture(params=[
@@ -216,7 +216,7 @@ class DescribeChart(object):
     ])
     def has_title_set_fixture(self, request):
         chart_cxml, new_value, expected_cxml = request.param
-        chart = Chart(element('c:chartSpace/%s' % chart_cxml), None)
+        chart = _Chart(element('c:chartSpace/%s' % chart_cxml), None)
         expected_xml = xml(expected_cxml)
         return chart, new_value, expected_xml
 
@@ -227,7 +227,7 @@ class DescribeChart(object):
     def legend_fixture(self, request, Legend_, legend_):
         chartSpace_cxml, has_legend = request.param
         chartSpace = element(chartSpace_cxml)
-        chart = Chart(chartSpace, None)
+        chart = _Chart(chartSpace, None)
         expected_value, expected_calls = None, []
         if has_legend:
             expected_value = legend_
@@ -239,7 +239,7 @@ class DescribeChart(object):
     def plots_fixture(self, _Plots_, plots_):
         chartSpace = element('c:chartSpace/c:chart/c:plotArea')
         plotArea = chartSpace.xpath('./c:chart/c:plotArea')[0]
-        chart = Chart(chartSpace, None)
+        chart = _Chart(chartSpace, None)
         return chart, plots_, _Plots_, plotArea
 
     @pytest.fixture
@@ -247,7 +247,7 @@ class DescribeChart(object):
             self, chart_data_, SeriesXmlRewriterFactory_, series_rewriter_,
             workbook_, workbook_prop_):
         chartSpace = element('c:chartSpace/c:chart/c:plotArea/c:pieChart')
-        chart = Chart(chartSpace, None)
+        chart = _Chart(chartSpace, None)
         chart_type = XL_CHART_TYPE.PIE
         xlsx_blob = 'fooblob'
         chart_data_.xlsx_blob = xlsx_blob
@@ -260,7 +260,7 @@ class DescribeChart(object):
     def series_fixture(self, SeriesCollection_, series_collection_):
         chartSpace = element('c:chartSpace/c:chart/c:plotArea')
         plotArea = chartSpace.xpath('.//c:plotArea')[0]
-        chart = Chart(chartSpace, None)
+        chart = _Chart(chartSpace, None)
         return chart, SeriesCollection_, plotArea, series_collection_
 
     @pytest.fixture(params=[
@@ -269,7 +269,7 @@ class DescribeChart(object):
     ])
     def style_get_fixture(self, request):
         chartSpace_cxml, expected_value = request.param
-        chart = Chart(element(chartSpace_cxml), None)
+        chart = _Chart(element(chartSpace_cxml), None)
         return chart, expected_value
 
     @pytest.fixture(params=[
@@ -280,7 +280,7 @@ class DescribeChart(object):
     ])
     def style_set_fixture(self, request):
         chartSpace_cxml, new_value, expected_chartSpace_cxml = request.param
-        chart = Chart(element(chartSpace_cxml), None)
+        chart = _Chart(element(chartSpace_cxml), None)
         expected_xml = xml(expected_chartSpace_cxml)
         return chart, new_value, expected_xml
 
@@ -292,7 +292,7 @@ class DescribeChart(object):
     ])
     def title_fixture(self, request, ChartTitle_, chart_title_):
         chartSpace_cxml, expected_cxml = request.param
-        chart = Chart(element(chartSpace_cxml), None)
+        chart = _Chart(element(chartSpace_cxml), None)
         expected_xml = xml(expected_cxml)
         return chart, expected_xml, ChartTitle_, chart_title_
 
@@ -303,13 +303,13 @@ class DescribeChart(object):
     def val_ax_fixture(self, request, ValueAxis_, value_axis_):
         chartSpace_xml, idx = request.param
         chartSpace = element(chartSpace_xml)
-        chart = Chart(chartSpace, None)
+        chart = _Chart(chartSpace, None)
         valAx = chartSpace.xpath('.//c:valAx')[idx]
         return chart, ValueAxis_, valAx, value_axis_
 
     @pytest.fixture
     def val_ax_raise_fixture(self):
-        chart = Chart(element('c:chartSpace/c:chart/c:plotArea'), None)
+        chart = _Chart(element('c:chartSpace/c:chart/c:plotArea'), None)
         return chart
 
     # fixture components ---------------------------------------------
@@ -425,7 +425,7 @@ class DescribeChart(object):
     @pytest.fixture
     def workbook_prop_(self, request, workbook_):
         return property_mock(
-            request, Chart, '_workbook', return_value=workbook_
+            request, _Chart, '_workbook', return_value=workbook_
         )
 
 
@@ -557,7 +557,7 @@ class Describe_Plots(object):
 
     @pytest.fixture
     def chart_(self, request):
-        return instance_mock(request, Chart)
+        return instance_mock(request, _Chart)
 
     @pytest.fixture
     def PlotFactory_(self, request, plot_):

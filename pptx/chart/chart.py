@@ -19,11 +19,11 @@ from pptx.text.text import Font, TextFrame
 from pptx.util import lazyproperty
 
 
-class Chart(PartElementProxy):
+class _Chart(PartElementProxy):
     """A chart object."""
 
     def __init__(self, chartSpace, chart_part):
-        super(Chart, self).__init__(chartSpace, chart_part)
+        super(_Chart, self).__init__(chartSpace, chart_part)
         self._chartSpace = chartSpace
 
     @property

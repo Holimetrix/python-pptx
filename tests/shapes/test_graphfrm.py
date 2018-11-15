@@ -8,7 +8,7 @@ from __future__ import absolute_import, print_function
 
 import pytest
 
-from pptx.chart.chart import Chart
+from pptx.chart.chart import _Chart
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.shapes.graphfrm import CT_GraphicalObjectFrame
 from pptx.parts.chart import ChartPart
@@ -119,7 +119,7 @@ class DescribeGraphicFrame(object):
 
     @pytest.fixture
     def chart_(self, request):
-        return instance_mock(request, Chart)
+        return instance_mock(request, _Chart)
 
     @pytest.fixture
     def chart_part_(self, request, chart_):

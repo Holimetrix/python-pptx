@@ -16,4 +16,4 @@ Feature: GraphicFrame properties and methods
 
   Scenario: GraphicFrame.chart
     Given a GraphicFrame object containing a chart as shape
-     Then shape.chart is a Chart object
+     Then shape.chart is a _Chart object

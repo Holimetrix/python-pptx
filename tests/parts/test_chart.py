@@ -8,7 +8,7 @@ from __future__ import absolute_import, print_function
 
 import pytest
 
-from pptx.chart.chart import Chart
+from pptx.chart.chart import _Chart
 from pptx.chart.data import ChartData
 from pptx.enum.base import EnumValue
 from pptx.opc.constants import CONTENT_TYPE as CT, RELATIONSHIP_TYPE as RT
@@ -93,7 +93,7 @@ class DescribeChartPart(object):
     @pytest.fixture
     def Chart_(self, request, chart_):
         return class_mock(
-            request, 'pptx.parts.chart.Chart', return_value=chart_
+            request, 'pptx.parts.chart._Chart', return_value=chart_
         )
 
     @pytest.fixture
@@ -102,7 +102,7 @@ class DescribeChartPart(object):
 
     @pytest.fixture
     def chart_(self, request):
-        return instance_mock(request, Chart)
+        return instance_mock(request, _Chart)
 
     @pytest.fixture
     def chart_blob_(self, request):

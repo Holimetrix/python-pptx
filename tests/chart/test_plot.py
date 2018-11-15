@@ -9,7 +9,7 @@ from __future__ import absolute_import, print_function
 import pytest
 
 from pptx.chart.category import Categories
-from pptx.chart.chart import Chart
+from pptx.chart.chart import _Chart
 from pptx.chart.plot import (
     _BasePlot, AreaPlot, Area3DPlot, BarPlot, BubblePlot, DataLabels,
     DoughnutPlot, LinePlot, PiePlot, PlotFactory, PlotTypeInspector,
@@ -169,7 +169,7 @@ class Describe_BasePlot(object):
 
     @pytest.fixture
     def chart_(self, request):
-        return instance_mock(request, Chart)
+        return instance_mock(request, _Chart)
 
     @pytest.fixture
     def DataLabels_(self, request, data_labels_):
@@ -344,7 +344,7 @@ class DescribePlotFactory(object):
 
     @pytest.fixture
     def chart_(self, request):
-        return instance_mock(request, Chart)
+        return instance_mock(request, _Chart)
 
 
 class DescribePlotTypeInspector(object):

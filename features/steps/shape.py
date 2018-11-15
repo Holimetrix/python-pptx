@@ -490,11 +490,11 @@ def then_shape_adjustments_is_value(context):
     assert shape.adjustments[0] == 0.15
 
 
-@then('shape.chart is a Chart object')
+@then('shape.chart is a _Chart object')
 def then_shape_chart_is_a_Chart_object(context):
     chart = context.shape.chart
     class_name = chart.__class__.__name__
-    assert class_name == 'Chart', 'got %s' % class_name
+    assert class_name == '_Chart', 'got %s' % class_name
 
 
 @then("shape.click_action is an ActionSetting object")

@@ -6,7 +6,7 @@ Chart part objects, including Chart and Charts
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from ..chart.chart import Chart
+from ..chart.chart import _Chart
 from .embeddedpackage import EmbeddedXlsxPart
 from ..opc.constants import CONTENT_TYPE as CT, RELATIONSHIP_TYPE as RT
 from ..opc.package import XmlPart
@@ -39,7 +39,7 @@ class ChartPart(XmlPart):
         """
         The |Chart| object representing the chart in this part.
         """
-        return Chart(self._element, self)
+        return _Chart(self._element, self)
 
     @lazyproperty
     def chart_workbook(self):
