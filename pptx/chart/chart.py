@@ -18,6 +18,8 @@ from pptx.shared import ElementProxy, PartElementProxy
 from pptx.text.text import Font, TextFrame
 from pptx.util import lazyproperty
 
+from .xmlwriter import ChartXmlWriter
+
 
 class _Chart(PartElementProxy):
     """A chart object."""
@@ -290,3 +292,51 @@ class _Plots(Sequence):
 
     def __len__(self):
         return len(self._plotArea.xCharts)
+
+
+class Chart(object):
+    def __init__(self):
+        self._plots = []  # type: List[Plot]
+        pass
+
+    def add_plot(self, plot):
+        self._plots.append(plot)
+
+    @property
+    def plots(self):
+        return self._plots
+
+    def xml_bytes(self):
+        """
+        Return a blob containing the XML for a chart of *chart_type*
+        containing the series in this chart data object, as bytes suitable
+        for writing directly to a file.
+        """
+        return self._xml().encode('utf-8')
+
+    def _xml(self):
+        """
+        Return (as unicode text) the XML for a chart of *chart_type*
+        populated with the values in this chart data object. The XML is
+        a complete XML document, including an XML declaration specifying
+        UTF-8 encoding.
+        """
+        return ChartXmlWriter(self).xml
+
+    @property
+    def xlsx_blob(self):
+        return self._plots[0].chart_data.xlsx_blob
+
+
+class Plot(object):
+    def __init__(self, chart_type, chart_data):
+        self._chart_type = chart_type
+        self._chart_data = chart_data
+
+    @property
+    def chart_data(self):
+        return self._chart_data
+
+    @property
+    def chart_type(self):
+        return self._chart_type

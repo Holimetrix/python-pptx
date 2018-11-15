@@ -15,7 +15,100 @@ from ..oxml import parse_xml
 from ..oxml.ns import nsdecls
 
 
-def ChartXmlWriter(chart_type, chart_data):
+class ChartXmlWriter(object):
+    """
+    Generates XML text (unicode) for a default chart, like the one added by
+    PowerPoint when you click the *Add Column Chart* button on the ribbon.
+    Differentiated XML for different chart types is provided by subclasses.
+    """
+
+    def __init__(self, chart):
+        self._chart = chart
+        self._date_1904 = False
+        self._rounded_corners = False
+
+    @property
+    def xml(self):
+        """
+
+            '  <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.'
+            'org/markup-compatibility/2006">\n'
+            '    <mc:Choice xmlns:c14="http://schemas.microsoft.com/office/d'
+            'rawing/2007/8/2/chart" Requires="c14">\n'
+            '      <c14:style val="118"/>\n'
+            '    </mc:Choice>\n'
+            '    <mc:Fallback>\n'
+            '      <c:style val="18"/>\n'
+            '    </mc:Fallback>\n'
+            '  </mc:AlternateContent>\n'
+
+        :return:
+        :rtype:
+        """
+        return (
+            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
+            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
+            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
+            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
+            'iceDocument/2006/relationships">\n'
+            '  <c:date1904 val="{date_1904_xml}"/>\n'
+            '  <c:roundedCorners val="{rounded_corners_xml}"/>\n'
+            '  <c:chart>\n'
+            '    <c:autoTitleDeleted val="0"/>\n'
+            '    <c:plotArea>\n'
+            '      <c:layout/>\n'
+            '{plots_xml}'
+            '    </c:plotArea>\n'
+            '    <c:legend>\n'
+            '      <c:legendPos val="r"/>\n'
+            '      <c:layout/>\n'
+            '      <c:overlay val="0"/>\n'
+            '    </c:legend>\n'
+            '    <c:plotVisOnly val="1"/>\n'
+            '    <c:dispBlanksAs val="gap"/>\n'
+            '    <c:showDLblsOverMax val="0"/>\n'
+            '  </c:chart>\n'
+            '  <c:txPr>\n'
+            '    <a:bodyPr/>\n'
+            '    <a:lstStyle/>\n'
+            '    <a:p>\n'
+            '      <a:pPr>\n'
+            '        <a:defRPr sz="1800"/>\n'
+            '      </a:pPr>\n'
+            '      <a:endParaRPr lang="en-US"/>\n'
+            '    </a:p>\n'
+            '  </c:txPr>\n'
+            '</c:chartSpace>\n'
+        ).format(**{
+            'date_1904_xml':       self.date_1904_xml,
+            'rounded_corners_xml': self.rounded_corners_xml,
+            'plots_xml':           self.plots_xml
+        })
+
+    @property
+    def date_1904_xml(self):
+        return self._bool_to_str(self._date_1904)
+
+    @property
+    def rounded_corners_xml(self):
+        return self._bool_to_str(self._rounded_corners)
+
+    @property
+    def plots_xml(self):
+        xml = ''
+        for plot in self._chart.plots:
+            writer = PlotXmlWriter(plot.chart_type, plot.chart_data)
+            xml += writer.xml
+
+        print(xml)
+        return xml
+
+    @staticmethod
+    def _bool_to_str(value):
+        return "1" if value else "0"
+
+
+def PlotXmlWriter(chart_type, chart_data):
     """
     Factory function returning appropriate XML writer object for
     *chart_type*, loaded with *chart_type* and *chart_data*.
@@ -301,17 +394,6 @@ class _AreaChartXmlWriter(_BaseChartXmlWriter):
     @property
     def xml(self):
         return (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:date1904 val="0"/>\n'
-            '  <c:roundedCorners val="0"/>\n'
-            '  <c:chart>\n'
-            '    <c:autoTitleDeleted val="0"/>\n'
-            '    <c:plotArea>\n'
-            '      <c:layout/>\n'
             '      <c:areaChart>\n'
             '{grouping_xml}'
             '        <c:varyColors val="0"/>\n'
@@ -344,27 +426,6 @@ class _AreaChartXmlWriter(_BaseChartXmlWriter):
             '        <c:crosses val="autoZero"/>\n'
             '        <c:crossBetween val="midCat"/>\n'
             '      </c:valAx>\n'
-            '    </c:plotArea>\n'
-            '    <c:legend>\n'
-            '      <c:legendPos val="r"/>\n'
-            '      <c:layout/>\n'
-            '      <c:overlay val="0"/>\n'
-            '    </c:legend>\n'
-            '    <c:plotVisOnly val="1"/>\n'
-            '    <c:dispBlanksAs val="zero"/>\n'
-            '    <c:showDLblsOverMax val="0"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ).format(**{
             'grouping_xml': self._grouping_xml,
             'ser_xml':      self._ser_xml,
@@ -458,14 +519,6 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
     @property
     def xml(self):
         return (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:date1904 val="0"/>\n'
-            '  <c:chart>\n'
-            '    <c:plotArea>\n'
             '      <c:barChart>\n'
             '{barDir_xml}'
             '{grouping_xml}'
@@ -487,20 +540,6 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
             '        <c:crossAx val="-2068027336"/>\n'
             '        <c:crosses val="autoZero"/>\n'
             '      </c:valAx>\n'
-            '    </c:plotArea>\n'
-            '    <c:dispBlanksAs val="gap"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr lang="en-US"/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ).format(**{
             'barDir_xml':   self._barDir_xml,
             'grouping_xml': self._grouping_xml,
@@ -657,17 +696,6 @@ class _DoughnutChartXmlWriter(_BaseChartXmlWriter):
     @property
     def xml(self):
         return (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:date1904 val="0"/>\n'
-            '  <c:roundedCorners val="0"/>\n'
-            '  <c:chart>\n'
-            '    <c:autoTitleDeleted val="0"/>\n'
-            '    <c:plotArea>\n'
-            '      <c:layout/>\n'
             '      <c:doughnutChart>\n'
             '        <c:varyColors val="1"/>\n'
             '{ser_xml}'
@@ -683,27 +711,6 @@ class _DoughnutChartXmlWriter(_BaseChartXmlWriter):
             '        <c:firstSliceAng val="0"/>\n'
             '        <c:holeSize val="50"/>\n'
             '      </c:doughnutChart>\n'
-            '    </c:plotArea>\n'
-            '    <c:legend>\n'
-            '      <c:legendPos val="r"/>\n'
-            '      <c:layout/>\n'
-            '      <c:overlay val="0"/>\n'
-            '    </c:legend>\n'
-            '    <c:plotVisOnly val="1"/>\n'
-            '    <c:dispBlanksAs val="gap"/>\n'
-            '    <c:showDLblsOverMax val="0"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ).format(**{
             'ser_xml':      self._ser_xml,
         })
@@ -746,15 +753,6 @@ class _LineChartXmlWriter(_BaseChartXmlWriter):
     @property
     def xml(self):
         return (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:date1904 val="0"/>\n'
-            '  <c:chart>\n'
-            '    <c:autoTitleDeleted val="0"/>\n'
-            '    <c:plotArea>\n'
             '      <c:lineChart>\n'
             '{grouping_xml}'
             '        <c:varyColors val="0"/>\n'
@@ -777,27 +775,6 @@ class _LineChartXmlWriter(_BaseChartXmlWriter):
             '        <c:crossAx val="2118791784"/>\n'
             '        <c:crosses val="autoZero"/>\n'
             '      </c:valAx>\n'
-            '    </c:plotArea>\n'
-            '    <c:legend>\n'
-            '      <c:legendPos val="r"/>\n'
-            '      <c:layout/>\n'
-            '      <c:overlay val="0"/>\n'
-            '    </c:legend>\n'
-            '    <c:plotVisOnly val="1"/>\n'
-            '    <c:dispBlanksAs val="gap"/>\n'
-            '    <c:showDLblsOverMax val="0"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr lang="en-US"/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ).format(**{
             'grouping_xml': self._grouping_xml,
             'ser_xml':      self._ser_xml,
@@ -914,31 +891,10 @@ class _PieChartXmlWriter(_BaseChartXmlWriter):
     @property
     def xml(self):
         return (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:chart>\n'
-            '    <c:plotArea>\n'
             '      <c:pieChart>\n'
             '        <c:varyColors val="1"/>\n'
             '{ser_xml}'
             '      </c:pieChart>\n'
-            '    </c:plotArea>\n'
-            '    <c:dispBlanksAs val="gap"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr lang="en-US"/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ).format(**{
             'ser_xml': self._ser_xml,
         })
@@ -977,26 +933,6 @@ class _RadarChartXmlWriter(_BaseChartXmlWriter):
     @property
     def xml(self):
         return (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:date1904 val="0"/>\n'
-            '  <c:roundedCorners val="0"/>\n'
-            '  <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.'
-            'org/markup-compatibility/2006">\n'
-            '    <mc:Choice xmlns:c14="http://schemas.microsoft.com/office/d'
-            'rawing/2007/8/2/chart" Requires="c14">\n'
-            '      <c14:style val="118"/>\n'
-            '    </mc:Choice>\n'
-            '    <mc:Fallback>\n'
-            '      <c:style val="18"/>\n'
-            '    </mc:Fallback>\n'
-            '  </mc:AlternateContent>\n'
-            '  <c:chart>\n'
-            '    <c:plotArea>\n'
-            '      <c:layout/>\n'
             '      <c:radarChart>\n'
             '        <c:radarStyle val="{radar_style}"/>\n'
             '        <c:varyColors val="0"/>\n'
@@ -1039,22 +975,6 @@ class _RadarChartXmlWriter(_BaseChartXmlWriter):
             '        <c:crosses val="autoZero"/>\n'
             '        <c:crossBetween val="between"/>\n'
             '      </c:valAx>\n'
-            '    </c:plotArea>\n'
-            '    <c:plotVisOnly val="1"/>\n'
-            '    <c:dispBlanksAs val="gap"/>\n'
-            '    <c:showDLblsOverMax val="0"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr lang="en-US"/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ).format(**{
             'radar_style': self._radar_style,
             'ser_xml':     self._ser_xml,
@@ -1109,13 +1029,6 @@ class _XyChartXmlWriter(_BaseChartXmlWriter):
     @property
     def xml(self):
         xml = (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:chart>\n'
-            '    <c:plotArea>\n'
             '      <c:scatterChart>\n'
             '        <c:scatterStyle val="%s"/>\n'
             '        <c:varyColors val="0"/>\n'
@@ -1154,27 +1067,6 @@ class _XyChartXmlWriter(_BaseChartXmlWriter):
             '        <c:crosses val="autoZero"/>\n'
             '        <c:crossBetween val="midCat"/>\n'
             '      </c:valAx>\n'
-            '    </c:plotArea>\n'
-            '    <c:legend>\n'
-            '      <c:legendPos val="r"/>\n'
-            '      <c:layout/>\n'
-            '      <c:overlay val="0"/>\n'
-            '    </c:legend>\n'
-            '    <c:plotVisOnly val="1"/>\n'
-            '    <c:dispBlanksAs val="gap"/>\n'
-            '    <c:showDLblsOverMax val="0"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr lang="en-US"/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ) % (self._scatterStyle_val, self._ser_xml)
         return xml
 
@@ -1250,15 +1142,6 @@ class _BubbleChartXmlWriter(_XyChartXmlWriter):
     @property
     def xml(self):
         xml = (
-            '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\'?>\n'
-            '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawin'
-            'gml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/draw'
-            'ingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/off'
-            'iceDocument/2006/relationships">\n'
-            '  <c:chart>\n'
-            '    <c:autoTitleDeleted val="0"/>\n'
-            '    <c:plotArea>\n'
-            '      <c:layout/>\n'
             '      <c:bubbleChart>\n'
             '        <c:varyColors val="0"/>\n'
             '%s'
@@ -1306,27 +1189,6 @@ class _BubbleChartXmlWriter(_XyChartXmlWriter):
             '        <c:crosses val="autoZero"/>\n'
             '        <c:crossBetween val="midCat"/>\n'
             '      </c:valAx>\n'
-            '    </c:plotArea>\n'
-            '    <c:legend>\n'
-            '      <c:legendPos val="r"/>\n'
-            '      <c:layout/>\n'
-            '      <c:overlay val="0"/>\n'
-            '    </c:legend>\n'
-            '    <c:plotVisOnly val="1"/>\n'
-            '    <c:dispBlanksAs val="gap"/>\n'
-            '    <c:showDLblsOverMax val="0"/>\n'
-            '  </c:chart>\n'
-            '  <c:txPr>\n'
-            '    <a:bodyPr/>\n'
-            '    <a:lstStyle/>\n'
-            '    <a:p>\n'
-            '      <a:pPr>\n'
-            '        <a:defRPr sz="1800"/>\n'
-            '      </a:pPr>\n'
-            '      <a:endParaRPr lang="en-US"/>\n'
-            '    </a:p>\n'
-            '  </c:txPr>\n'
-            '</c:chartSpace>\n'
         ) % self._ser_xml
         return xml
 

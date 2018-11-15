@@ -165,13 +165,13 @@ class SlidePart(BaseSlidePart):
         slide_part.relate_to(slide_layout_part, RT.SLIDE_LAYOUT)
         return slide_part
 
-    def add_chart_part(self, chart_type, chart_data):
+    def add_chart_part(self, chart):
         """
         Return the rId of a new |ChartPart| object containing a chart of
         *chart_type*, displaying *chart_data*, and related to the slide
         contained in this part.
         """
-        chart_part = ChartPart.new(chart_type, chart_data, self.package)
+        chart_part = ChartPart.new(chart, self.package)
         rId = self.relate_to(chart_part, RT.CHART)
         return rId
 

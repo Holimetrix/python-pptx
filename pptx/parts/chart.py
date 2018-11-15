@@ -21,16 +21,17 @@ class ChartPart(XmlPart):
     partname_template = '/ppt/charts/chart%d.xml'
 
     @classmethod
-    def new(cls, chart_type, chart_data, package):
+    def new(cls, chart, package):
         """
         Return a new |ChartPart| instance added to *package* containing
         a chart of *chart_type* and depicting *chart_data*.
         """
-        chart_blob = chart_data.xml_bytes(chart_type)
+        chart_blob = chart.xml_bytes()
         partname = package.next_partname(cls.partname_template)
         content_type = CT.DML_CHART
         chart_part = cls.load(partname, content_type, chart_blob, package)
-        xlsx_blob = chart_data.xlsx_blob
+        # FIXME
+        xlsx_blob = chart.xlsx_blob
         chart_part.chart_workbook.update_from_xlsx_blob(xlsx_blob)
         return chart_part
 

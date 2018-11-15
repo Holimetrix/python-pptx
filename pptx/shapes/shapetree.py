@@ -234,7 +234,7 @@ class _BaseGroupShapes(_BaseShapes):
         super(_BaseGroupShapes, self).__init__(grpSp, parent)
         self._grpSp = grpSp
 
-    def add_chart(self, chart_type, x, y, cx, cy, chart_data):
+    def add_chart(self, x, y, cx, cy, chart):
         """Add a new chart of *chart_type* to the slide.
 
         The chart is positioned at (*x*, *y*), has size (*cx*, *cy*), and
@@ -247,7 +247,7 @@ class _BaseGroupShapes(_BaseShapes):
         accessed using the :attr:`chart` property of the returned
         |GraphicFrame| object.
         """
-        rId = self.part.add_chart_part(chart_type, chart_data)
+        rId = self.part.add_chart_part(chart)
         graphicFrame = self._add_chart_graphicFrame(rId, x, y, cx, cy)
         self._recalculate_extents()
         return self._shape_factory(graphicFrame)
