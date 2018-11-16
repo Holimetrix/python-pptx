@@ -176,7 +176,7 @@ class CategoryWorkbookWriter(_BaseWorkbookWriter):
         first cell.
         """
         col_offset = self._chart_data.categories.depth
-        for idx, series in enumerate(self._chart_data):
+        for idx, series in enumerate(self._chart_data.series):
             num_format = (
                 workbook.add_format({'num_format': series.number_format})
             )

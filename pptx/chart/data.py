@@ -10,6 +10,8 @@ import datetime
 from collections import Sequence
 from numbers import Number
 
+import random
+
 from ..util import lazyproperty
 from .xlsx import (
     BubbleWorkbookWriter, CategoryWorkbookWriter, XyWorkbookWriter
@@ -17,7 +19,7 @@ from .xlsx import (
 from .xmlwriter import ChartXmlWriter
 
 
-class _BaseChartData(Sequence):
+class _BaseChartData(object):
     """
     Base class providing common members for chart data objects. A chart data
     object serves as a proxy for the chart data table that will be written to
@@ -32,11 +34,11 @@ class _BaseChartData(Sequence):
         self._number_format = number_format
         self._series = []
 
-    def __getitem__(self, index):
-        return self._series.__getitem__(index)
-
-    def __len__(self):
-        return self._series.__len__()
+    # def __getitem__(self, index):
+    #     return self._series.__getitem__(index)
+    #
+    # def __len__(self):
+    #     return self._series.__len__()
 
     def append(self, series):
         return self._series.append(series)
@@ -68,7 +70,7 @@ class _BaseChartData(Sequence):
         """
         Return the integer index of *series* in this sequence.
         """
-        for idx, s in enumerate(self):
+        for idx, s in enumerate(self._series):
             if series is s:
                 return idx
         raise ValueError('series not in chart data object')
@@ -126,6 +128,10 @@ class _BaseChartData(Sequence):
         UTF-8 encoding.
         """
         return ChartXmlWriter(chart_type, self).xml
+
+    @property
+    def series(self):
+        return self._series
 
 
 class _BaseSeriesData(Sequence):
@@ -346,6 +352,7 @@ class Categories(Sequence):
         super(Categories, self).__init__()
         self._categories = []
         self._number_format = None
+        self._id = random.getrandbits(24)
 
     def __getitem__(self, idx):
         return self._categories.__getitem__(idx)
@@ -502,6 +509,10 @@ class Categories(Sequence):
     @number_format.setter
     def number_format(self, value):
         self._number_format = value
+
+    @property
+    def id(self):
+        return self._id
 
 
 class Category(object):

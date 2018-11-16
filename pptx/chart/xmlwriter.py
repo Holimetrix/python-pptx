@@ -6,6 +6,8 @@ Composers for default chart XML for various chart types.
 
 from __future__ import absolute_import, print_function, unicode_literals
 
+import collections
+
 from copy import deepcopy
 from xml.sax.saxutils import escape
 
@@ -13,6 +15,134 @@ from ..compat import to_unicode
 from ..enum.chart import XL_CHART_TYPE
 from ..oxml import parse_xml
 from ..oxml.ns import nsdecls
+
+
+class AxesXmlWriter(object):
+    def __init__(self, chart):
+        self._chart = chart
+
+    def _x_axis_id(self):
+        from pptx.chart.data import CategoryChartData
+
+        if isinstance(self._chart.data, CategoryChartData):
+            return self._chart.data.categories.id
+        else:
+            raise NotImplementedError("unknown chart data")
+
+    @property
+    def _x_axis_pos(self):
+        return 'b'
+
+    def _y_axis_pos(self, secondary=False):
+        return 'l' if not secondary else 'r'
+
+    def _x_axis_xml(self, x_axis_id, y_axis_id):
+
+        from pptx.chart.data import CategoryChartData
+
+        if isinstance(self._chart.data, CategoryChartData):
+            categories = self._chart.data.categories
+
+            if categories.are_dates:
+                xml = (
+                    '      <c:dateAx>\n'
+                    '        <c:axId val="{x_axis_id}"/>\n'
+                    '        <c:scaling>\n'
+                    '          <c:orientation val="minMax"/>\n'
+                    '        </c:scaling>\n'
+                    '        <c:delete val="0"/>\n'
+                    '        <c:axPos val="{cat_ax_pos}"/>\n'
+                    '        <c:numFmt formatCode="{nf}" sourceLinked="1"/>\n'
+                    '        <c:majorTickMark val="out"/>\n'
+                    '        <c:minorTickMark val="none"/>\n'
+                    '        <c:tickLblPos val="nextTo"/>\n'
+                    '        <c:crossAx val="{y_axis_id}"/>\n'
+                    '        <c:crosses val="autoZero"/>\n'
+                    '        <c:auto val="1"/>\n'
+                    '        <c:lblOffset val="100"/>\n'
+                    '        <c:baseTimeUnit val="days"/>\n'
+                    '      </c:dateAx>\n'
+                ).format(**{
+                    'x_axis_id': x_axis_id,
+                    'y_axis_id': y_axis_id,
+                    'cat_ax_pos': self._x_axis_pos,
+                    'nf': categories.number_format,
+                })
+            else:
+                xml = (
+                    '      <c:catAx>\n'
+                    '        <c:axId val="{x_axis_id}"/>\n'
+                    '        <c:scaling>\n'
+                    '          <c:orientation val="minMax"/>\n'
+                    '        </c:scaling>\n'
+                    '        <c:delete val="0"/>\n'
+                    '        <c:axPos val="{cat_ax_pos}"/>\n'
+                    '        <c:majorTickMark val="out"/>\n'
+                    '        <c:minorTickMark val="none"/>\n'
+                    '        <c:tickLblPos val="nextTo"/>\n'
+                    '        <c:crossAx val="{y_axis_id}"/>\n'
+                    '        <c:crosses val="autoZero"/>\n'
+                    '        <c:auto val="1"/>\n'
+                    '        <c:lblAlgn val="ctr"/>\n'
+                    '        <c:lblOffset val="100"/>\n'
+                    '        <c:noMultiLvlLbl val="0"/>\n'
+                    '      </c:catAx>\n'
+                ).format(**{
+                    'x_axis_id': x_axis_id,
+                    'y_axis_id': y_axis_id,
+                    'cat_ax_pos': self._x_axis_pos,
+                })
+        else:
+            raise NotImplementedError("unknown chart_data type")
+
+        return xml
+
+    def _y_axis_xml(self, x_axis_id, y_axis_id, secondary=False):
+
+        crosses = 'autoZero' if not secondary else 'max'
+
+        # Y axis
+        xml = (
+            '      <c:valAx>\n'
+            '        <c:axId val="{y_axis_id}"/>\n'
+            '        <c:scaling>\n'
+            '          <c:orientation val="minMax"/>\n'
+            '        </c:scaling>\n'
+            '        <c:delete val="0"/>\n'
+            '        <c:axPos val="{val_ax_pos}"/>\n'
+            '        <c:majorGridlines/>\n'
+            '        <c:majorTickMark val="out"/>\n'
+            '        <c:minorTickMark val="none"/>\n'
+            '        <c:tickLblPos val="nextTo"/>\n'
+            '        <c:crossAx val="{x_axis_id}"/>\n'
+            '        <c:crosses val="{crosses}"/>\n'
+            '        <c:crossBetween val="between"/>\n'
+            '      </c:valAx>\n'
+        ).format(**{
+            'val_ax_pos': self._y_axis_pos(secondary),
+            'y_axis_id': y_axis_id,
+            'x_axis_id': x_axis_id,
+            'crosses': crosses
+        })
+
+        return xml
+
+    @property
+    def xml(self):
+
+        axes = set()
+        for plot in self._chart.plots:
+            axes.add((plot.axis.id, plot.axis.secondary))
+
+        if len(axes) > 2:
+            raise ValueError("more than two axes")
+
+        axes_xml = ''
+
+        for (axis_id, secondary) in axes:
+            axes_xml += self._y_axis_xml(self._x_axis_id(), axis_id, secondary)
+
+        return axes_xml + self._x_axis_xml(self._x_axis_id(), self._chart.plots[0].axis.id)
 
 
 class ChartXmlWriter(object):
@@ -58,6 +188,7 @@ class ChartXmlWriter(object):
             '    <c:plotArea>\n'
             '      <c:layout/>\n'
             '{plots_xml}'
+            '{axes_xml}'
             '    </c:plotArea>\n'
             '    <c:legend>\n'
             '      <c:legendPos val="r"/>\n'
@@ -82,7 +213,8 @@ class ChartXmlWriter(object):
         ).format(**{
             'date_1904_xml':       self.date_1904_xml,
             'rounded_corners_xml': self.rounded_corners_xml,
-            'plots_xml':           self.plots_xml
+            'plots_xml':           self.plots_xml,
+            'axes_xml':            self.axes_xml
         })
 
     @property
@@ -96,19 +228,23 @@ class ChartXmlWriter(object):
     @property
     def plots_xml(self):
         xml = ''
+
         for plot in self._chart.plots:
-            writer = PlotXmlWriter(plot.chart_type, plot.chart_data)
+            writer = PlotXmlWriter(plot.chart_type, self._chart.data, plot)
             xml += writer.xml
 
-        print(xml)
         return xml
+
+    @property
+    def axes_xml(self):
+        return AxesXmlWriter(self._chart).xml
 
     @staticmethod
     def _bool_to_str(value):
         return "1" if value else "0"
 
 
-def PlotXmlWriter(chart_type, chart_data):
+def PlotXmlWriter(chart_type, chart_data, plot):
     """
     Factory function returning appropriate XML writer object for
     *chart_type*, loaded with *chart_type* and *chart_data*.
@@ -150,7 +286,7 @@ def PlotXmlWriter(chart_type, chart_data):
         raise NotImplementedError(
             'XML writer for chart type %s not yet implemented' % chart_type
         )
-    return BuilderCls(chart_type, chart_data)
+    return BuilderCls(chart_type, chart_data, plot)
 
 
 def SeriesXmlRewriterFactory(chart_type, chart_data):
@@ -182,11 +318,11 @@ class _BaseChartXmlWriter(object):
     PowerPoint when you click the *Add Column Chart* button on the ribbon.
     Differentiated XML for different chart types is provided by subclasses.
     """
-    def __init__(self, chart_type, series_seq):
+    def __init__(self, chart_type, chart_data, plot):
         super(_BaseChartXmlWriter, self).__init__()
         self._chart_type = chart_type
-        self._chart_data = series_seq
-        self._series_seq = list(series_seq)
+        self._chart_data = chart_data
+        self._plot = plot
 
     @property
     def xml(self):
@@ -195,6 +331,33 @@ class _BaseChartXmlWriter(object):
         unicode text. This method must be overridden by each subclass.
         """
         raise NotImplementedError('must be implemented by all subclasses')
+
+    @property
+    def _x_axis_id(self):
+        from pptx.chart.data import CategoryChartData
+
+        if isinstance(self._chart_data, CategoryChartData):
+            return self._chart_data.categories.id
+        else:
+            raise NotImplementedError("unknown chart data")
+
+    @property
+    def _axis_ids(self):
+        return (
+                '        <c:axId val="{x_axis_id}"/>\n'
+                '        <c:axId val="{y_axis_id}"/>\n'
+        ).format(**{
+            "y_axis_id": self._plot.axis.id,
+            "x_axis_id": self._x_axis_id
+        })
+
+    @property
+    def _y_axis_id(self):
+        return self._plot.axis.id
+
+    @staticmethod
+    def _bool_to_str(value):
+        return "1" if value else "0"
 
 
 class _BaseSeriesXmlWriter(object):
@@ -524,29 +687,27 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
             '{grouping_xml}'
             '{ser_xml}'
             '{overlap_xml}'
-            '        <c:axId val="-2068027336"/>\n'
-            '        <c:axId val="-2113994440"/>\n'
+            '{axis_ids}'
             '      </c:barChart>\n'
-            '{cat_ax_xml}'
-            '      <c:valAx>\n'
-            '        <c:axId val="-2113994440"/>\n'
-            '        <c:scaling/>\n'
-            '        <c:delete val="0"/>\n'
-            '        <c:axPos val="{val_ax_pos}"/>\n'
-            '        <c:majorGridlines/>\n'
-            '        <c:majorTickMark val="out"/>\n'
-            '        <c:minorTickMark val="none"/>\n'
-            '        <c:tickLblPos val="nextTo"/>\n'
-            '        <c:crossAx val="-2068027336"/>\n'
-            '        <c:crosses val="autoZero"/>\n'
-            '      </c:valAx>\n'
+            #'{cat_ax_xml}'
+            # '      <c:valAx>\n'
+            # '        <c:axId val="-2113994440"/>\n'
+            # '        <c:scaling/>\n'
+            # '        <c:delete val="0"/>\n'
+            # '        <c:axPos val="{val_ax_pos}"/>\n'
+            # '        <c:majorGridlines/>\n'
+            # '        <c:majorTickMark val="out"/>\n'
+            # '        <c:minorTickMark val="none"/>\n'
+            # '        <c:tickLblPos val="nextTo"/>\n'
+            # '        <c:crossAx val="-2068027336"/>\n'
+            # '        <c:crosses val="autoZero"/>\n'
+            # '      </c:valAx>\n'
         ).format(**{
             'barDir_xml':   self._barDir_xml,
             'grouping_xml': self._grouping_xml,
             'ser_xml':      self._ser_xml,
             'overlap_xml':  self._overlap_xml,
-            'cat_ax_xml':   self._cat_ax_xml,
-            'val_ax_pos':   self._val_ax_pos,
+            'axis_ids':     self._axis_ids
         })
 
     @property
@@ -567,7 +728,7 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
         )
 
     @property
-    def _cat_ax_pos(self):
+    def _x_axis_pos(self):
         return {
             XL_CHART_TYPE.BAR_CLUSTERED:      'l',
             XL_CHART_TYPE.BAR_STACKED:        'l',
@@ -576,56 +737,6 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
             XL_CHART_TYPE.COLUMN_STACKED:     'b',
             XL_CHART_TYPE.COLUMN_STACKED_100: 'b',
         }[self._chart_type]
-
-    @property
-    def _cat_ax_xml(self):
-        categories = self._chart_data.categories
-
-        if categories.are_dates:
-            return (
-                '      <c:dateAx>\n'
-                '        <c:axId val="-2068027336"/>\n'
-                '        <c:scaling>\n'
-                '          <c:orientation val="minMax"/>\n'
-                '        </c:scaling>\n'
-                '        <c:delete val="0"/>\n'
-                '        <c:axPos val="{cat_ax_pos}"/>\n'
-                '        <c:numFmt formatCode="{nf}" sourceLinked="1"/>\n'
-                '        <c:majorTickMark val="out"/>\n'
-                '        <c:minorTickMark val="none"/>\n'
-                '        <c:tickLblPos val="nextTo"/>\n'
-                '        <c:crossAx val="-2113994440"/>\n'
-                '        <c:crosses val="autoZero"/>\n'
-                '        <c:auto val="1"/>\n'
-                '        <c:lblOffset val="100"/>\n'
-                '        <c:baseTimeUnit val="days"/>\n'
-                '      </c:dateAx>\n'
-            ).format(**{
-                'cat_ax_pos': self._cat_ax_pos,
-                'nf':         categories.number_format,
-            })
-
-        return (
-            '      <c:catAx>\n'
-            '        <c:axId val="-2068027336"/>\n'
-            '        <c:scaling>\n'
-            '          <c:orientation val="minMax"/>\n'
-            '        </c:scaling>\n'
-            '        <c:delete val="0"/>\n'
-            '        <c:axPos val="{cat_ax_pos}"/>\n'
-            '        <c:majorTickMark val="out"/>\n'
-            '        <c:minorTickMark val="none"/>\n'
-            '        <c:tickLblPos val="nextTo"/>\n'
-            '        <c:crossAx val="-2113994440"/>\n'
-            '        <c:crosses val="autoZero"/>\n'
-            '        <c:auto val="1"/>\n'
-            '        <c:lblAlgn val="ctr"/>\n'
-            '        <c:lblOffset val="100"/>\n'
-            '        <c:noMultiLvlLbl val="0"/>\n'
-            '      </c:catAx>\n'
-        ).format(**{
-            'cat_ax_pos': self._cat_ax_pos,
-        })
 
     @property
     def _grouping_xml(self):
@@ -657,7 +768,7 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
     @property
     def _ser_xml(self):
         xml = ''
-        for series in self._chart_data:
+        for series in self._plot.series_seq:
             xml_writer = _CategorySeriesXmlWriter(series)
             xml += (
                 '        <c:ser>\n'
@@ -677,7 +788,7 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
         return xml
 
     @property
-    def _val_ax_pos(self):
+    def _y_ax_pos(self):
         return {
             XL_CHART_TYPE.BAR_CLUSTERED:      'b',
             XL_CHART_TYPE.BAR_STACKED:        'b',
@@ -686,6 +797,10 @@ class _BarChartXmlWriter(_BaseChartXmlWriter):
             XL_CHART_TYPE.COLUMN_STACKED:     'l',
             XL_CHART_TYPE.COLUMN_STACKED_100: 'l',
         }[self._chart_type]
+
+    @property
+    def _x_axis_id(self):
+        return self._chart_data.categories.id
 
 
 class _DoughnutChartXmlWriter(_BaseChartXmlWriter):
@@ -759,26 +874,12 @@ class _LineChartXmlWriter(_BaseChartXmlWriter):
             '{ser_xml}'
             '        <c:marker val="1"/>\n'
             '        <c:smooth val="0"/>\n'
-            '        <c:axId val="2118791784"/>\n'
-            '        <c:axId val="2140495176"/>\n'
+            '{axis_ids}'
             '      </c:lineChart>\n'
-            '{cat_ax_xml}'
-            '      <c:valAx>\n'
-            '        <c:axId val="2140495176"/>\n'
-            '        <c:scaling/>\n'
-            '        <c:delete val="0"/>\n'
-            '        <c:axPos val="l"/>\n'
-            '        <c:majorGridlines/>\n'
-            '        <c:majorTickMark val="out"/>\n'
-            '        <c:minorTickMark val="none"/>\n'
-            '        <c:tickLblPos val="nextTo"/>\n'
-            '        <c:crossAx val="2118791784"/>\n'
-            '        <c:crosses val="autoZero"/>\n'
-            '      </c:valAx>\n'
         ).format(**{
             'grouping_xml': self._grouping_xml,
             'ser_xml':      self._ser_xml,
-            'cat_ax_xml':   self._cat_ax_xml,
+            'axis_ids':     self._axis_ids
         })
 
     @property
@@ -861,7 +962,7 @@ class _LineChartXmlWriter(_BaseChartXmlWriter):
     @property
     def _ser_xml(self):
         xml = ''
-        for series in self._chart_data:
+        for series in self._plot.series_seq:
             xml_writer = _CategorySeriesXmlWriter(series)
             xml += (
                 '        <c:ser>\n'

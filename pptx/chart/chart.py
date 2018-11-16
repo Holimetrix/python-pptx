@@ -8,6 +8,8 @@ from __future__ import (
 
 from collections import Sequence
 
+import random
+
 from pptx.chart.axis import CategoryAxis, DateAxis, ValueAxis
 from pptx.chart.legend import Legend
 from pptx.chart.plot import PlotFactory, PlotTypeInspector
@@ -295,9 +297,9 @@ class _Plots(Sequence):
 
 
 class Chart(object):
-    def __init__(self):
+    def __init__(self, data):
         self._plots = []  # type: List[Plot]
-        pass
+        self._data = data
 
     def add_plot(self, plot):
         self._plots.append(plot)
@@ -305,6 +307,10 @@ class Chart(object):
     @property
     def plots(self):
         return self._plots
+
+    @property
+    def data(self):
+        return self._data
 
     def xml_bytes(self):
         """
@@ -325,18 +331,41 @@ class Chart(object):
 
     @property
     def xlsx_blob(self):
-        return self._plots[0].chart_data.xlsx_blob
+        return self.data.xlsx_blob
+
+
+class Axis(object):
+    def __init__(self):
+        self._id = random.getrandbits(24)
+        self._secondary = False
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def secondary(self):
+        return self._secondary
+
+    @secondary.setter
+    def secondary(self, value):
+        self._secondary = value
 
 
 class Plot(object):
-    def __init__(self, chart_type, chart_data):
+    def __init__(self, chart_type, series_seq, axis):
         self._chart_type = chart_type
-        self._chart_data = chart_data
-
-    @property
-    def chart_data(self):
-        return self._chart_data
+        self._series_seq = series_seq
+        self._axis = axis
 
     @property
     def chart_type(self):
         return self._chart_type
+
+    @property
+    def series_seq(self):
+        return self._series_seq
+
+    @property
+    def axis(self):
+        return self._axis
