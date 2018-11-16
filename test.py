@@ -1,10 +1,12 @@
 import datetime
 
 from pptx import Presentation
-from pptx.chart.chart import Plot, Chart, Axis
+from pptx.chart.chart import Plot, Chart
 from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
-from pptx.util import Inches
+from pptx.dml.color import RGBColor
+from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
+from pptx.util import Inches, Pt
+from pptx.enum.chart import XL_LABEL_POSITION
 
 # create presentation with 1 slide ------
 prs = Presentation()
@@ -20,22 +22,32 @@ kpi2_series = chart_data.add_series('KPI 2', (320, 355, 475))
 kpi3_series = chart_data.add_series('KPI 3', (150, 25, 675))
 kpi4_series = chart_data.add_series('KPI 4', (520, 35, 275))
 
-y_axis = Axis()
-y2_axis = Axis()
-y2_axis.secondary = True
+grp_plot = Plot(XL_CHART_TYPE.COLUMN_CLUSTERED, [grp_series])
+kpi_plot = Plot(XL_CHART_TYPE.LINE, [kpi_series, kpi2_series, kpi3_series, kpi4_series], secondary_axis=True)
 
-grp_plot = Plot(XL_CHART_TYPE.COLUMN_CLUSTERED, [grp_series], y_axis)
-kpi_plot = Plot(XL_CHART_TYPE.LINE, [kpi_series, kpi2_series, kpi3_series, kpi4_series], y2_axis)
+p = Plot(XL_CHART_TYPE.PIE, [])
 
 chart = Chart(chart_data)
 
 chart.add_plot(grp_plot)
 chart.add_plot(kpi_plot)
+# chart.add_plot(p)
 
 # add chart to slide --------------------
 x, y, cx, cy = Inches(2), Inches(2), Inches(6), Inches(4.5)
-slide.shapes.add_chart(
+chart = slide.shapes.add_chart(
     x, y, cx, cy, chart
-)
+).chart
+
+# chart.has_legend = False
+chart.legend.position = XL_LEGEND_POSITION.TOP
+
+plot = chart.plots[0]
+plot.has_data_labels = True
+data_labels = plot.data_labels
+
+data_labels.font.size = Pt(13)
+data_labels.font.color.rgb = RGBColor(0x0A, 0x42, 0x80)
+data_labels.position = XL_LABEL_POSITION.INSIDE_END
 
 prs.save('chart-01.pptx')

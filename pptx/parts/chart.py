@@ -30,7 +30,6 @@ class ChartPart(XmlPart):
         partname = package.next_partname(cls.partname_template)
         content_type = CT.DML_CHART
         chart_part = cls.load(partname, content_type, chart_blob, package)
-        # FIXME
         xlsx_blob = chart.xlsx_blob
         chart_part.chart_workbook.update_from_xlsx_blob(xlsx_blob)
         return chart_part
