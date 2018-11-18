@@ -130,7 +130,7 @@ class AxesXmlWriter(object):
         if self._chart.secondary_y_axis_id is not None:
             axes_xml += self._y_axis_xml(self._chart.secondary_y_axis_id, secondary=True)
 
-        return axes_xml + self._x_axis_xml(self._chart.y_axis_id)
+        return self._x_axis_xml(self._chart.y_axis_id) + axes_xml
 
 
 class ChartXmlWriter(object):

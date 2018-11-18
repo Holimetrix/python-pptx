@@ -16,6 +16,7 @@ from pptx.chart.plot import PlotFactory, PlotTypeInspector
 from pptx.chart.series import SeriesCollection
 from pptx.chart.xmlwriter import SeriesXmlRewriterFactory
 from pptx.dml.chtfmt import ChartFormat
+from pptx.enum.chart import XL_CHART_TYPE
 from pptx.shared import ElementProxy, PartElementProxy
 from pptx.text.text import Font, TextFrame
 from pptx.util import lazyproperty
@@ -300,8 +301,25 @@ class Chart(object):
     def __init__(self, data):
         self._plots = []  # type: List[Plot]
         self._data = data
+        self._x_axis_id = random.getrandbits(24)
+        self._y_axis_id = random.getrandbits(24)
+        self._secondary_y_axis_id = None
+        self._has_axes = True
 
     def add_plot(self, plot):
+        if len(self._plots) > 0 and self._has_axes != plot.has_axes:
+            raise ValueError("can't mix a plot with and without axes")
+
+        if plot.has_axes:
+            # attach axes id to the plot
+            if plot.secondary_axis and self._secondary_y_axis_id is None:
+                self._secondary_y_axis_id = random.getrandbits(24)
+
+            plot.y_axis_id = self._secondary_y_axis_id if plot.secondary_axis else self._y_axis_id
+            plot.x_axis_id = self._x_axis_id
+        else:
+            self._has_axes = False
+
         self._plots.append(plot)
 
     @property
@@ -311,6 +329,22 @@ class Chart(object):
     @property
     def data(self):
         return self._data
+
+    @property
+    def y_axis_id(self):
+        return self._y_axis_id
+
+    @property
+    def secondary_y_axis_id(self):
+        return self._secondary_y_axis_id
+
+    @property
+    def x_axis_id(self):
+        return self._x_axis_id
+
+    @property
+    def has_axes(self):
+        return self._has_axes
 
     def xml_bytes(self):
         """
@@ -333,30 +367,13 @@ class Chart(object):
     def xlsx_blob(self):
         return self.data.xlsx_blob
 
-
-class Axis(object):
-    def __init__(self):
-        self._id = random.getrandbits(24)
-        self._secondary = False
-
-    @property
-    def id(self):
-        return self._id
-
-    @property
-    def secondary(self):
-        return self._secondary
-
-    @secondary.setter
-    def secondary(self, value):
-        self._secondary = value
-
-
 class Plot(object):
-    def __init__(self, chart_type, series_seq, axis):
+    def __init__(self, chart_type, series_seq, secondary_axis=False):
         self._chart_type = chart_type
         self._series_seq = series_seq
-        self._axis = axis
+        self._secondary_axis = secondary_axis
+        self._x_axis_id = None
+        self._y_axis_id = None
 
     @property
     def chart_type(self):
@@ -367,5 +384,56 @@ class Plot(object):
         return self._series_seq
 
     @property
-    def axis(self):
-        return self._axis
+    def has_axes(self):
+        XL_CT = XL_CHART_TYPE
+        return {
+            XL_CT.AREA: True,
+            XL_CT.AREA_STACKED: True,
+            XL_CT.AREA_STACKED_100: True,
+            XL_CT.BAR_CLUSTERED: True,
+            XL_CT.BAR_STACKED: True,
+            XL_CT.BAR_STACKED_100: True,
+            XL_CT.BUBBLE: True,
+            XL_CT.BUBBLE_THREE_D_EFFECT: True,
+            XL_CT.COLUMN_CLUSTERED: True,
+            XL_CT.COLUMN_STACKED: True,
+            XL_CT.COLUMN_STACKED_100: True,
+            XL_CT.DOUGHNUT: False,
+            XL_CT.DOUGHNUT_EXPLODED: False,
+            XL_CT.LINE: True,
+            XL_CT.LINE_MARKERS: True,
+            XL_CT.LINE_MARKERS_STACKED: True,
+            XL_CT.LINE_MARKERS_STACKED_100: True,
+            XL_CT.LINE_STACKED: True,
+            XL_CT.LINE_STACKED_100: True,
+            XL_CT.PIE: False,
+            XL_CT.PIE_EXPLODED: False,
+            XL_CT.RADAR: False,
+            XL_CT.RADAR_FILLED: False,
+            XL_CT.RADAR_MARKERS: False,
+            XL_CT.XY_SCATTER: True,
+            XL_CT.XY_SCATTER_LINES: True,
+            XL_CT.XY_SCATTER_LINES_NO_MARKERS: True,
+            XL_CT.XY_SCATTER_SMOOTH: True,
+            XL_CT.XY_SCATTER_SMOOTH_NO_MARKERS: True,
+        }[self._chart_type]
+
+    @property
+    def secondary_axis(self):
+        return self._secondary_axis
+
+    @property
+    def x_axis_id(self):
+        return self._x_axis_id
+
+    @x_axis_id.setter
+    def x_axis_id(self, value):
+        self._x_axis_id = value
+
+    @property
+    def y_axis_id(self):
+        return self._y_axis_id
+
+    @y_axis_id.setter
+    def y_axis_id(self, value):
+        self._y_axis_id = value

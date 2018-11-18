@@ -10,8 +10,6 @@ import datetime
 from collections import Sequence
 from numbers import Number
 
-import random
-
 from ..util import lazyproperty
 from .xlsx import (
     BubbleWorkbookWriter, CategoryWorkbookWriter, XyWorkbookWriter
@@ -352,7 +350,6 @@ class Categories(Sequence):
         super(Categories, self).__init__()
         self._categories = []
         self._number_format = None
-        self._id = random.getrandbits(24)
 
     def __getitem__(self, idx):
         return self._categories.__getitem__(idx)
@@ -509,10 +506,6 @@ class Categories(Sequence):
     @number_format.setter
     def number_format(self, value):
         self._number_format = value
-
-    @property
-    def id(self):
-        return self._id
 
 
 class Category(object):
