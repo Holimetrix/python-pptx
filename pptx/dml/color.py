@@ -95,6 +95,14 @@ class ColorFormat(object):
         """
         return self._color.color_type
 
+    @property
+    def alpha(self):
+        return self._color.alpha
+
+    @alpha.setter
+    def alpha(self, value):
+        self._color.alpha = value
+
     def _validate_brightness_value(self, value):
         if value < -1.0 or value > 1.0:
             raise ValueError('brightness must be number in range -1.0 to 1.0')
@@ -182,6 +190,19 @@ class _Color(object):
         color_elm = self._xClr.clear_lum()
         color_elm.add_lumMod(lumMod_val)
         color_elm.add_lumOff(lumOff_val)
+
+    @property
+    def alpha(self):
+        alpha = self._xClr.alpha
+
+        if alpha is not None:
+            return alpha.val
+
+        return 0
+
+    @alpha.setter
+    def alpha(self, value):
+        self._xClr.add_alpha(value)
 
 
 class _HslColor(_Color):

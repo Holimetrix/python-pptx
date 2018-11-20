@@ -92,6 +92,30 @@ class LineFormat(object):
         ln = self._get_or_add_ln()
         ln.w = emu
 
+    @property
+    def cap(self):
+        ln = self._ln
+        if ln is None:
+            return None
+        return ln.cap
+
+    @cap.setter
+    def cap(self, value):
+        ln = self._get_or_add_ln()
+        ln.cap = value
+
+    @property
+    def cmpd(self):
+        ln = self._ln
+        if ln is None:
+            return None
+        return ln.cmpd
+
+    @cap.setter
+    def cmpd(self, value):
+        ln = self._get_or_add_ln()
+        ln.cmpd = value
+
     def _get_or_add_ln(self):
         """
         Return the ``<a:ln>`` element containing the line format properties

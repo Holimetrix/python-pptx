@@ -766,3 +766,28 @@ class ST_UniversalMeasure(BaseSimpleType):
         }[units_part]
         emu_value = Emu(int(round(quantity * multiplier)))
         return emu_value
+
+
+class ST_LineCap(XsdTokenEnumeration):
+    """
+    Valid values for <a:ln cap=""> attribute
+    """
+    RND  = 'rnd'
+    SQ   = 'sq'
+    FLAT = 'flat'
+
+    _members = (RND, SQ, FLAT)
+
+
+class ST_CompoundLine(XsdTokenEnumeration):
+    """
+    Valid values for <a:ln cmpd=""> attribute
+    """
+
+    SNG = 'sng'
+    DBL = 'dbl'
+    THICK_THIN = 'thickThin'
+    THIN_THICK = 'thinThick'
+    TRI = 'tri'
+
+    _members = (SNG, DBL, THICK_THIN, THIN_THICK, TRI)

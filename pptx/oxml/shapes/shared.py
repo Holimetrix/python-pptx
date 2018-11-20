@@ -12,8 +12,8 @@ from pptx.oxml.ns import qn
 from pptx.oxml.simpletypes import (
     ST_Angle, ST_Coordinate, ST_Direction, ST_DrawingElementId, ST_LineWidth,
     ST_PlaceholderSize, ST_PositiveCoordinate, XsdBoolean, XsdString,
-    XsdUnsignedInt
-)
+    XsdUnsignedInt,
+    ST_LineCap, ST_CompoundLine)
 from pptx.oxml.xmlchemy import (
     BaseOxmlElement, Choice, OptionalAttribute, OxmlElement,
     RequiredAttribute, ZeroOrOne, ZeroOrOneChoice
@@ -235,7 +235,10 @@ class CT_LineProperties(BaseOxmlElement):
     prstDash = ZeroOrOne('a:prstDash', successors=_tag_seq[5:])
     custDash = ZeroOrOne('a:custDash', successors=_tag_seq[6:])
     del _tag_seq
+
     w = OptionalAttribute('w', ST_LineWidth, default=Emu(0))
+    cap = OptionalAttribute('cap', ST_LineCap)
+    cmpd = OptionalAttribute('cmpd', ST_CompoundLine)
 
     @property
     def eg_fillProperties(self):
