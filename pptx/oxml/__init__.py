@@ -175,7 +175,11 @@ register_element_cls('c:title',            CT_Title)
 register_element_cls('c:tx',               CT_Tx)
 register_element_cls('c:varyColors',       CT_Boolean)
 register_element_cls('c:x',                CT_Double)
+register_element_cls('c:y',                CT_Double)
+register_element_cls('c:w',                CT_Double)
+register_element_cls('c:h',                CT_Double)
 register_element_cls('c:xMode',            CT_LayoutMode)
+register_element_cls('c:yMode',            CT_LayoutMode)
 
 
 from .coreprops import CT_CoreProperties  # noqa: E402

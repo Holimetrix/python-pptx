@@ -57,6 +57,94 @@ class CT_Legend(BaseOxmlElement):
         layout = self.get_or_add_layout()
         layout.horz_offset = offset
 
+    @property
+    def x(self):
+        """
+        The float value in ./c:layout/c:manualLayout/c:x when
+        ./c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that
+        XPath expression has no match.
+        """
+        layout = self.layout
+        if layout is None:
+            return 0.0
+        return layout.x
+
+    @x.setter
+    def x(self, value):
+        """
+        Set the value of ./c:layout/c:manualLayout/c:x@val to *offset* and
+        ./c:layout/c:manualLayout/c:xMode@val to "factor". Remove
+        ./c:layout/c:manualLayout if *offset* == 0.
+        """
+        layout = self.get_or_add_layout()
+        layout.x = value
+
+    @property
+    def y(self):
+        """
+        The float value in ./c:layout/c:manualLayout/c:x when
+        ./c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that
+        XPath expression has no match.
+        """
+        layout = self.layout
+        if layout is None:
+            return 0.0
+        return layout.y
+
+    @y.setter
+    def y(self, value):
+        """
+        Set the value of ./c:layout/c:manualLayout/c:x@val to *offset* and
+        ./c:layout/c:manualLayout/c:xMode@val to "factor". Remove
+        ./c:layout/c:manualLayout if *offset* == 0.
+        """
+        layout = self.get_or_add_layout()
+        layout.y = value
+
+    @property
+    def width(self):
+        """
+        The float value in ./c:layout/c:manualLayout/c:x when
+        ./c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that
+        XPath expression has no match.
+        """
+        layout = self.layout
+        if layout is None:
+            return 0.0
+        return layout.width
+
+    @width.setter
+    def width(self, value):
+        """
+        Set the value of ./c:layout/c:manualLayout/c:x@val to *offset* and
+        ./c:layout/c:manualLayout/c:xMode@val to "factor". Remove
+        ./c:layout/c:manualLayout if *offset* == 0.
+        """
+        layout = self.get_or_add_layout()
+        layout.width = value
+        
+    @property
+    def height(self):
+        """
+        The float value in ./c:layout/c:manualLayout/c:x when
+        ./c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that
+        XPath expression has no match.
+        """
+        layout = self.layout
+        if layout is None:
+            return 0.0
+        return layout.height
+
+    @height.setter
+    def height(self, value):
+        """
+        Set the value of ./c:layout/c:manualLayout/c:x@val to *offset* and
+        ./c:layout/c:manualLayout/c:xMode@val to "factor". Remove
+        ./c:layout/c:manualLayout if *offset* == 0.
+        """
+        layout = self.get_or_add_layout()
+        layout.height = value
+
     def _new_txPr(self):
         return CT_TextBody.new_txPr()
 

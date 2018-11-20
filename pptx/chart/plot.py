@@ -112,6 +112,17 @@ class _BasePlot(object):
     def vary_by_categories(self, value):
         self._element.get_or_add_varyColors().val = bool(value)
 
+    @property
+    def has_marker(self):
+        marker = self._element.marker
+        if marker is None:
+            return False
+        return marker.val
+
+    @has_marker.setter
+    def has_marker(self, value):
+        self._element.get_or_add_marker().val = bool(value)
+
 
 class AreaPlot(_BasePlot):
     """

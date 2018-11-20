@@ -80,3 +80,59 @@ class Legend(object):
     @position.setter
     def position(self, position):
         self._element.get_or_add_legendPos().val = position
+
+    @property
+    def x(self):
+        """
+        Adjustment of the x position of the legend from its default.
+        Expressed as a float between -1.0 and 1.0 representing a fraction of
+        the chart width. Negative values move the legend left, positive
+        values move it to the right. |None| if no setting is specified.
+        """
+        return self._element.x
+
+    @x.setter
+    def x(self, value):
+        self._element.x = value
+
+    @property
+    def y(self):
+        """
+        Adjustment of the x position of the legend from its default.
+        Expressed as a float between -1.0 and 1.0 representing a fraction of
+        the chart width. Negative values move the legend left, positive
+        values move it to the right. |None| if no setting is specified.
+        """
+        return self._element.y
+
+    @y.setter
+    def y(self, value):
+        self._element.y = value
+
+    @property
+    def width(self):
+        """
+        Adjustment of the x position of the legend from its default.
+        Expressed as a float between -1.0 and 1.0 representing a fraction of
+        the chart width. Negative values move the legend left, positive
+        values move it to the right. |None| if no setting is specified.
+        """
+        return self._element.width
+
+    @width.setter
+    def width(self, value):
+        self._element.width = value
+
+    @property
+    def height(self):
+        """
+        Adjustment of the x position of the legend from its default.
+        Expressed as a float between -1.0 and 1.0 representing a fraction of
+        the chart width. Negative values move the legend left, positive
+        values move it to the right. |None| if no setting is specified.
+        """
+        return self._element.height
+
+    @width.setter
+    def height(self, value):
+        self._element.height = value

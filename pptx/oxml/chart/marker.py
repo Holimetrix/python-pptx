@@ -9,8 +9,8 @@ from __future__ import (
 )
 
 from ...enum.chart import XL_MARKER_STYLE
-from ..simpletypes import ST_MarkerSize
-from ..xmlchemy import BaseOxmlElement, RequiredAttribute, ZeroOrOne
+from ..simpletypes import ST_MarkerSize, XsdBoolean
+from ..xmlchemy import BaseOxmlElement, RequiredAttribute, ZeroOrOne, OptionalAttribute
 
 
 class CT_Marker(BaseOxmlElement):
@@ -25,6 +25,8 @@ class CT_Marker(BaseOxmlElement):
     size = ZeroOrOne('c:size', successors=_tag_seq[2:])
     spPr = ZeroOrOne('c:spPr', successors=_tag_seq[3:])
     del _tag_seq
+
+    val = OptionalAttribute('val', XsdBoolean, default=True)
 
     @property
     def size_val(self):

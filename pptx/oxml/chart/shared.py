@@ -83,6 +83,90 @@ class CT_Layout(BaseOxmlElement):
         manualLayout = self.get_or_add_manualLayout()
         manualLayout.horz_offset = offset
 
+    @property
+    def x(self):
+        """
+        The float value in ./c:manualLayout/c:x when
+        c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that XPath
+        expression finds no match.
+        """
+        manualLayout = self.manualLayout
+        if manualLayout is None:
+            return 0.0
+        return manualLayout.x
+
+    @x.setter
+    def x(self, value):
+        """
+        Set the value of ./c:manualLayout/c:x@val to *offset* and
+        ./c:manualLayout/c:xMode@val to "factor". Remove ./c:manualLayout if
+        *offset* == 0.
+        """
+        manualLayout = self.get_or_add_manualLayout()
+        manualLayout.x = value
+
+    @property
+    def y(self):
+        """
+        The float value in ./c:manualLayout/c:x when
+        c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that XPath
+        expression finds no match.
+        """
+        return manualLayout.y
+
+    @y.setter
+    def y(self, value):
+        """
+        Set the value of ./c:manualLayout/c:x@val to *offset* and
+        ./c:manualLayout/c:xMode@val to "factor". Remove ./c:manualLayout if
+        *offset* == 0.
+        """
+        manualLayout = self.get_or_add_manualLayout()
+        manualLayout.y = value
+
+    @property
+    def width(self):
+        """
+        The float value in ./c:manualLayout/c:x when
+        c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that XPath
+        expression finds no match.
+        """
+        manualLayout = self.manualLayout
+        if manualLayout is None:
+            return 0.0
+        return manualLayout.width
+
+    @width.setter
+    def width(self, value):
+        """
+        Set the value of ./c:manualLayout/c:x@val to *offset* and
+        ./c:manualLayout/c:xMode@val to "factor". Remove ./c:manualLayout if
+        *offset* == 0.
+        """
+        manualLayout = self.get_or_add_manualLayout()
+        manualLayout.width = value
+        
+    @property
+    def height(self):
+        """
+        The float value in ./c:manualLayout/c:x when
+        c:layout/c:manualLayout/c:xMode@val == "factor". 0.0 if that XPath
+        expression finds no match.
+        """
+        manualLayout = self.manualLayout
+        if manualLayout is None:
+            return 0.0
+        return manualLayout.height
+
+    @height.setter
+    def height(self, value):
+        """
+        Set the value of ./c:manualLayout/c:x@val to *offset* and
+        ./c:manualLayout/c:xMode@val to "factor". Remove ./c:manualLayout if
+        *offset* == 0.
+        """
+        manualLayout = self.get_or_add_manualLayout()
+        manualLayout.height = value
 
 class CT_LayoutMode(BaseOxmlElement):
     """
@@ -103,7 +187,11 @@ class CT_ManualLayout(BaseOxmlElement):
         'c:y', 'c:w', 'c:h', 'c:extLst'
     )
     xMode = ZeroOrOne('c:xMode', successors=_tag_seq[2:])
-    x = ZeroOrOne('c:x', successors=_tag_seq[6:])
+    yMode = ZeroOrOne('c:yMode', successors=_tag_seq[3:])
+    x_ = ZeroOrOne('c:x', successors=_tag_seq[6:])
+    y_ = ZeroOrOne('c:y', successors=_tag_seq[7:])
+    w = ZeroOrOne('c:w', successors=_tag_seq[8:])
+    h = ZeroOrOne('c:h', successors=_tag_seq[9:])
     del _tag_seq
 
     @property
@@ -123,8 +211,57 @@ class CT_ManualLayout(BaseOxmlElement):
         Set the value of ./c:x@val to *offset* and ./c:xMode@val to "factor".
         """
         self.get_or_add_xMode().val = ST_LayoutMode.FACTOR
-        self.get_or_add_x().val = offset
+        self.get_or_add_x_().val = offset
 
+    @property
+    def x(self):
+        x = self.x
+        if x is None:
+            return 0.0
+
+        return x.val
+
+    @x.setter
+    def x(self, value):
+        self.get_or_add_xMode().val = ST_LayoutMode.EDGE
+        self.get_or_add_x_().val = value
+
+    @property
+    def y(self):
+        y = self.y_
+        if y is None:
+            return 0.0
+
+        return y.val
+
+    @y.setter
+    def y(self, value):
+        self.get_or_add_yMode().val = ST_LayoutMode.EDGE
+        self.get_or_add_y_().val = value
+
+    @property
+    def width(self):
+        w = self.w
+        if w is None:
+            return 0.0
+
+        return w.val
+
+    @width.setter
+    def width(self, value):
+        self.get_or_add_w().val = value
+
+    @property
+    def height(self):
+        h = self.h
+        if h is None:
+            return 0.0
+
+        return h.val
+
+    @height.setter
+    def height(self, value):
+        self.get_or_add_h().val = value
 
 class CT_NumFmt(BaseOxmlElement):
     """
