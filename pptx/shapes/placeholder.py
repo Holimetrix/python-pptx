@@ -276,7 +276,7 @@ class ChartPlaceholder(_BaseSlidePlaceholder):
     """
     Placeholder shape that can only accept a chart.
     """
-    def insert_chart(self, chart_type, chart_data):
+    def insert_chart(self, chart):
         """
         Return a |PlaceholderGraphicFrame| object containing a new chart of
         *chart_type* depicting *chart_data* and having the same position and
@@ -288,7 +288,7 @@ class ChartPlaceholder(_BaseSlidePlaceholder):
         :attr:`~.PlaceholderGraphicFrame.chart` property of the returned
         |PlaceholderGraphicFrame| object.
         """
-        rId = self.part.add_chart_part(chart_type, chart_data)
+        rId = self.part.add_chart_part(chart)
         graphicFrame = self._new_chart_graphicFrame(
             rId, self.left, self.top, self.width, self.height
         )

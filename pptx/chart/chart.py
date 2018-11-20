@@ -38,17 +38,27 @@ class _Chart(PartElementProxy):
         chart, this is the X axis. Raises |ValueError| if no category
         axis is defined (as is the case for a pie chart, for example).
         """
+
+        def get_first_non_deleted(seq):
+            for el in seq:
+                if el.delete_.val == 1:
+                    continue
+
+                return el
+
+            return None
+
         catAx_lst = self._chartSpace.catAx_lst
         if catAx_lst:
-            return CategoryAxis(catAx_lst[0])
+            return CategoryAxis(get_first_non_deleted(catAx_lst))
 
         dateAx_lst = self._chartSpace.dateAx_lst
         if dateAx_lst:
-            return DateAxis(dateAx_lst[0])
+            return DateAxis(get_first_non_deleted(dateAx_lst))
 
         valAx_lst = self._chartSpace.valAx_lst
         if valAx_lst:
-            return ValueAxis(valAx_lst[0])
+            return ValueAxis(get_first_non_deleted(valAx_lst))
 
         raise ValueError('chart has no category axis')
 
@@ -182,18 +192,7 @@ class _Chart(PartElementProxy):
         rewriter.replace_series_data(self._chartSpace)
         self._workbook.update_from_xlsx_blob(chart_data.xlsx_blob)
 
-    @lazyproperty
-    def series(self):
-        """
-        A |SeriesCollection| object containing all the series in this
-        chart. When the chart has multiple plots, all the series for the
-        first plot appear before all those for the second, and so on. Series
-        within a plot have an explicit ordering and appear in that sequence.
-        """
-        return SeriesCollection(self._chartSpace.plotArea)
-
-    @property
-    def value_axis(self):
+    def value_axis(self, idx=0):
         """
         The |ValueAxis| object providing access to properties of the value
         axis of this chart. Raises |ValueError| if the chart has no value
@@ -203,7 +202,6 @@ class _Chart(PartElementProxy):
         if not valAx_lst:
             raise ValueError('chart has no value axis')
 
-        idx = 1 if len(valAx_lst) > 1 else 0
         return ValueAxis(valAx_lst[idx])
 
     @property
@@ -298,11 +296,12 @@ class _Plots(Sequence):
 
 
 class Chart(object):
-    def __init__(self, data):
+    def __init__(self, data=None):
         self._plots = []  # type: List[Plot]
         self._data = data
         self._x_axis_id = random.getrandbits(24)
         self._y_axis_id = random.getrandbits(24)
+        self._secondary_x_axis_id = None
         self._secondary_y_axis_id = None
         self._has_axes = True
 
@@ -312,11 +311,12 @@ class Chart(object):
 
         if plot.has_axes:
             # attach axes id to the plot
-            if plot.secondary_axis and self._secondary_y_axis_id is None:
+            if plot.secondary_axis and self._secondary_x_axis_id is None:
+                self._secondary_x_axis_id = random.getrandbits(24)
                 self._secondary_y_axis_id = random.getrandbits(24)
 
             plot.y_axis_id = self._secondary_y_axis_id if plot.secondary_axis else self._y_axis_id
-            plot.x_axis_id = self._x_axis_id
+            plot.x_axis_id = self._secondary_x_axis_id if plot.secondary_axis else self._x_axis_id
         else:
             self._has_axes = False
 
@@ -330,9 +330,17 @@ class Chart(object):
     def data(self):
         return self._data
 
+    @data.setter
+    def data(self, values):
+        self._data = values
+
     @property
     def y_axis_id(self):
         return self._y_axis_id
+
+    @property
+    def secondary_x_axis_id(self):
+        return self._secondary_x_axis_id
 
     @property
     def secondary_y_axis_id(self):
@@ -366,6 +374,7 @@ class Chart(object):
     @property
     def xlsx_blob(self):
         return self.data.xlsx_blob
+
 
 class Plot(object):
     def __init__(self, chart_type, series_seq, secondary_axis=False):

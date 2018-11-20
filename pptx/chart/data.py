@@ -593,7 +593,7 @@ class Category(object):
         """
         label = self._label
         if isinstance(label, (datetime.date, datetime.datetime)):
-            return '%.1f' % self._excel_date_number(date_1904)
+            return '%.0f' % self._excel_date_number(date_1904)
         return str(self._label)
 
     @property
