@@ -204,6 +204,15 @@ class TextFrame(Subshape):
             None:  None
         }[value]
 
+
+    @property
+    def rotation(self):
+        self._txBody.bodyPr.rot
+
+    @rotation.setter
+    def rotation(self, value):
+        self._txBody.bodyPr.rot = value
+
     def _apply_fit(self, font_family, font_size, is_bold, is_italic):
         """
         Arrange all the text in this text frame to fit inside its extents by

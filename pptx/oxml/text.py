@@ -19,7 +19,7 @@ from pptx.oxml.ns import nsdecls
 from pptx.oxml.simpletypes import (
     ST_Coordinate32, ST_TextFontScalePercentOrPercentString, ST_TextFontSize,
     ST_TextIndentLevelType, ST_TextSpacingPercentOrPercentString,
-    ST_TextSpacingPoint, ST_TextTypeface, ST_TextWrappingType, XsdBoolean
+    ST_TextSpacingPoint, ST_TextTypeface, ST_TextWrappingType, XsdBoolean, ST_Angle
 )
 from pptx.oxml.xmlchemy import (
     BaseOxmlElement, Choice, OneAndOnlyOne, OneOrMore, OptionalAttribute,
@@ -182,6 +182,7 @@ class CT_TextBodyProperties(BaseOxmlElement):
         Choice('a:spAutoFit')),
         successors=('a:scene3d', 'a:sp3d', 'a:flatTx', 'a:extLst')
     )
+    rot  = OptionalAttribute('rot',  ST_Angle, default=0)
     lIns = OptionalAttribute('lIns', ST_Coordinate32, default=Emu(91440))
     tIns = OptionalAttribute('tIns', ST_Coordinate32, default=Emu(45720))
     rIns = OptionalAttribute('rIns', ST_Coordinate32, default=Emu(91440))
