@@ -762,7 +762,7 @@ class _DoughnutChartXmlWriter(_BaseChartXmlWriter):
     @property
     def _ser_xml(self):
         xml = ''
-        for series in self._chart_data:
+        for series in self._plot.series_seq:
             xml_writer = _CategorySeriesXmlWriter(series)
             xml += (
                 '        <c:ser>\n'
