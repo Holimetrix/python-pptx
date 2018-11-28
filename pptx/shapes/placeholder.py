@@ -377,7 +377,7 @@ class TablePlaceholder(_BaseSlidePlaceholder):
     """
     Placeholder shape that can only accept a picture.
     """
-    def insert_table(self, rows, cols):
+    def insert_table(self, rows, cols, tableStyleId=None):
         """
         Return a |PlaceholderGraphicFrame| object containing a table of
         *rows* rows and *cols* columns. The position and width of the table
@@ -391,11 +391,11 @@ class TablePlaceholder(_BaseSlidePlaceholder):
         :attr:`~.PlaceholderGraphicFrame.table` property of the returned
         |PlaceholderGraphicFrame| object.
         """
-        graphicFrame = self._new_placeholder_table(rows, cols)
+        graphicFrame = self._new_placeholder_table(rows, cols, tableStyleId)
         self._replace_placeholder_with(graphicFrame)
         return PlaceholderGraphicFrame(graphicFrame, self._parent)
 
-    def _new_placeholder_table(self, rows, cols):
+    def _new_placeholder_table(self, rows, cols, tableStyleId):
         """
         Return a newly added `p:graphicFrame` element containing an empty
         table with *rows* rows and *cols* columns, positioned at the location
@@ -405,5 +405,5 @@ class TablePlaceholder(_BaseSlidePlaceholder):
         shape_id, name, height = self.shape_id, self.name, Emu(rows*370840)
         return CT_GraphicalObjectFrame.new_table_graphicFrame(
             shape_id, name, rows, cols, self.left, self.top, self.width,
-            height
+            height, tableStyleId
         )
