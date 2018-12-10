@@ -284,6 +284,15 @@ class ST_AxisUnit(XsdDouble):
             )
 
 
+class ST_AxPos(XsdStringEnumeration):
+    BOTTOM = 'b'
+    LEFT = 'l'
+    RIGHT = 'r'
+    TOP = 't'
+
+    _members = (BOTTOM, LEFT, RIGHT, TOP)
+
+
 class ST_BarDir(XsdStringEnumeration):
     """
     Valid values for <c:barDir val="?"> attribute

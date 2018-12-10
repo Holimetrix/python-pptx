@@ -37,6 +37,14 @@ class _BaseAxis(object):
         """
         return AxisTitle(self._element.get_or_add_title())
 
+    @property
+    def axis_position(self):
+        return self._element.axPos.val
+
+    @axis_position.setter
+    def axis_position(self, value):
+        self._element.axPos.val = value
+
     @lazyproperty
     def format(self):
         """

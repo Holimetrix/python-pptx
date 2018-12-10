@@ -10,7 +10,7 @@ from ...enum.chart import (
     XL_AXIS_CROSSES, XL_TICK_LABEL_POSITION, XL_TICK_MARK
 )
 from .shared import CT_Title
-from ..simpletypes import ST_AxisUnit, ST_LblOffset
+from ..simpletypes import ST_AxisUnit, ST_LblOffset, ST_AxPos
 from ..text import CT_TextBody
 from ..xmlchemy import (
     BaseOxmlElement, OneAndOnlyOne, OptionalAttribute, RequiredAttribute,
@@ -46,6 +46,10 @@ class CT_AxisUnit(BaseOxmlElement):
     val = RequiredAttribute('val', ST_AxisUnit)
 
 
+class CT_AxPos(BaseOxmlElement):
+    val = RequiredAttribute('val', ST_AxPos)
+
+
 class CT_CatAx(BaseAxisElement):
     """
     ``<c:catAx>`` element, defining a category axis.
@@ -58,6 +62,7 @@ class CT_CatAx(BaseAxisElement):
         'c:tickLblSkip', 'c:tickMarkSkip', 'c:noMultiLvlLbl', 'c:extLst'
     )
     scaling = OneAndOnlyOne('c:scaling')
+    axPos = OneAndOnlyOne('c:axPos')
     delete_ = ZeroOrOne('c:delete', successors=_tag_seq[3:])
     majorGridlines = ZeroOrOne('c:majorGridlines', successors=_tag_seq[5:])
     minorGridlines = ZeroOrOne('c:minorGridlines', successors=_tag_seq[6:])
@@ -103,6 +108,7 @@ class CT_DateAx(BaseAxisElement):
         'c:minorTimeUnit', 'c:extLst'
     )
     scaling = OneAndOnlyOne('c:scaling')
+    axPos = OneAndOnlyOne('c:axPos')
     delete_ = ZeroOrOne('c:delete', successors=_tag_seq[3:])
     majorGridlines = ZeroOrOne('c:majorGridlines', successors=_tag_seq[5:])
     minorGridlines = ZeroOrOne('c:minorGridlines', successors=_tag_seq[6:])
@@ -205,6 +211,7 @@ class CT_ValAx(BaseAxisElement):
         'c:minorUnit', 'c:dispUnits', 'c:extLst'
     )
     scaling = OneAndOnlyOne('c:scaling')
+    axPos = OneAndOnlyOne('c:axPos')
     delete_ = ZeroOrOne('c:delete', successors=_tag_seq[3:])
     majorGridlines = ZeroOrOne('c:majorGridlines', successors=_tag_seq[5:])
     minorGridlines = ZeroOrOne('c:minorGridlines', successors=_tag_seq[6:])
