@@ -428,6 +428,13 @@ class Font(object):
             value = MSO_UNDERLINE.NONE
         self._element.u = value
 
+    @property
+    def baseline(self):
+        return self._rPr.baseline
+
+    @underline.setter
+    def baseline(self, value):
+        self._rPr.baseline = value
 
 class _Hyperlink(Subshape):
     """

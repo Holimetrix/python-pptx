@@ -19,8 +19,8 @@ from pptx.oxml.ns import nsdecls
 from pptx.oxml.simpletypes import (
     ST_Coordinate32, ST_TextFontScalePercentOrPercentString, ST_TextFontSize,
     ST_TextIndentLevelType, ST_TextSpacingPercentOrPercentString,
-    ST_TextSpacingPoint, ST_TextTypeface, ST_TextWrappingType, XsdBoolean, ST_Angle
-)
+    ST_TextSpacingPoint, ST_TextTypeface, ST_TextWrappingType, XsdBoolean, ST_Angle,
+    ST_Percentage)
 from pptx.oxml.xmlchemy import (
     BaseOxmlElement, Choice, OneAndOnlyOne, OneOrMore, OptionalAttribute,
     RequiredAttribute, ZeroOrMore, ZeroOrOne, ZeroOrOneChoice
@@ -250,6 +250,7 @@ class CT_TextCharacterProperties(BaseOxmlElement):
     b = OptionalAttribute('b', XsdBoolean)
     i = OptionalAttribute('i', XsdBoolean)
     u = OptionalAttribute('u', MSO_TEXT_UNDERLINE_TYPE)
+    baseline = OptionalAttribute('baseline', ST_Percentage)
 
     def _new_gradFill(self):
         return CT_GradientFillProperties.new_gradFill()
